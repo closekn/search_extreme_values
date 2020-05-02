@@ -1,0 +1,16 @@
+
+# data
+/data/
+
+# cl
+*.obj
+*.exe
+
+# gcc
+*.out
+
+# emacs
+*~
+
+# Mac
+.DS_Store
