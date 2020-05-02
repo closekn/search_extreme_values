@@ -68,21 +68,21 @@ void output(int n) {
 
 	puts("");
 	puts(" time  |  minima  | interval");
-	puts("------------------------------");
+	puts("-----------------------------");
 
 	printf("%.4f | %.6f |\n", measur[extreme[0]], value[extreme[0]]);
 	ave = 0;
 	ave2 = 0;
 	for ( k = 1; k < n; k++ ) {
-		double interval = value[extreme[k]] - value[extreme[k-1]];
-		printf("%.4f | %.6f | %.6f\n", measur[extreme[k]], value[extreme[k]], interval);
+		double interval = measur[extreme[k]] - measur[extreme[k-1]];
+		printf("%.4f | %.6f | %.4f\n", measur[extreme[k]], value[extreme[k]], interval);
 		ave += interval;
 		ave2 += interval * interval;
 	}
 	ave /= (n-1);
 	ave2 /= (n-1);
 
-	puts("------------------------------");
+	puts("-----------------------------");
 	printf("極小値数 : %d\n", n);
 	printf("インターバル平均 : %.6f\n", ave);
 	printf("インターバル標準偏差 : %.12f\n", sqrt(ave2-(ave*ave)));
