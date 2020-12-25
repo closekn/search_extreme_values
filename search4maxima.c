@@ -3,7 +3,7 @@
 file   : search4maxima.c
 brief  : Search for maxima between start to end.
 author : closekn
-date   : 2018/04/24
+update : 2020/12/25
 ==============================
 */
 
@@ -12,14 +12,15 @@ date   : 2018/04/24
 #include <math.h>
 
 //---- マクロ定数
-#define BUF 65535 	// 読込可能データ業数 
+#define BUF 65535 	// 読込可能データ業数
 
 //---- 関数定義
-void input(double *lim, double *start, double *end);	// 入力
-void output(int n);										// 出力
-int file_load();										// ファイルデータ読込
+void input(double *lim, double *start, double *end);		// 入力
+int input_base_index(int *base_index, int num_ex);			// 基準極値インデックスの入力
+void output(int n, int base_index);											// 出力
+int file_load();																				// ファイルデータ読込
 int calc_maxima(double lim, double start, double end);	// 計測処理(極大値判定)
-double calc_noise(int k, double end);					// ノイズサイズ測定
+double calc_noise(int k, double end);										// ノイズサイズ測定
 
 //---- 大域変数
 char fname[BUF];		// ファイル名
@@ -30,11 +31,12 @@ int extreme[BUF]; 		// 極値の引数
 //---- メイン
 int main()
 {
-	double lim;		// しきい値
-	double start;	// 調査開始計測時間
-	double end;		// 調査終了計測時間
-	int num_d;		// データ数
-	int num_ex;		// 極値数
+	double lim;			// しきい値
+	double start;		// 調査開始計測時間
+	double end;			// 調査終了計測時間
+	int num_d;			// データ数
+	int num_ex;			// 極値数
+	int base_index; // 基準極値インデックス
 
 	//-- 入力
 	input(&lim, &start, &end);
@@ -47,7 +49,11 @@ int main()
 	num_ex = calc_maxima(lim, start, end);
 
 	//-- 出力
-	output(num_ex);
+	base_index = -1;
+	while ( 1 ) {
+		output(num_ex, base_index);
+		if ( input_base_index(&base_index, num_ex) ) { break; }
+	}
 	
 	return 0;
 }
@@ -60,23 +66,36 @@ void input(double *lim, double *start, double *end) {
 	printf("終了時間: "); scanf("%lf", end);
 }
 
+//---- 基準極値インデックスの入力
+int input_base_index(int *base_index, int num_ex) {
+	int check_break = 0;
+
+	printf("\n基準とするピークのNo. (-1で終了) : "); scanf("%d", base_index);
+	(*base_index)--;
+	if ( ! (0 <= *base_index && *base_index < num_ex) ) { check_break = 1; }
+
+	return check_break;
+}
+
 //---- 出力
-void output(int n) {
+void output(int n, int base_index) {
 	double ave;		// 平均
 	int k;			// 反復変数
 
 	puts("");
-	puts(" 時間  | 値");
-	puts("-----------------");
+	printf(" No. |  時間  |    値    "); if ( base_index != -1 ) { printf("| ピーク比較 base No.%d", base_index+1); } puts("");
+	printf("-------------------------"); if ( base_index != -1 ) { printf("-----------------------"); } puts("");
 
 	ave = 0;
 	for ( k = 0; k < n; k++ ) {
-		printf("%.4f | %.6f\n", measur[extreme[k]], value[extreme[k]]);
+		printf(" %3d | %.4f | %.6f ", k+1, measur[extreme[k]], value[extreme[k]]);
+		if ( base_index != -1 ) { printf("|  %10.3f %%", value[extreme[k]]/value[extreme[base_index]]*100); }
+		puts("");
 		ave += value[extreme[k]];
 	}
 	ave /= n;
 
-	puts("-----------------");
+	printf("-------------------------"); if ( base_index != -1 ) { printf("-----------------------"); } puts("");
 	printf("極大値数 : %d\n", n);
 	printf("極大値平均 : %.6f\n", ave);
 }
